@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -36,13 +38,13 @@ class _Qoutes extends State<Qoutes> {
           Card(
             child: Row(
               children: [
-                Column(children: [Text(qoute), Text(author)]),
                 IconButton(
                   onPressed: () {
                     setState(() => isFavorite = !isFavorite);
                   },
-                  icon: Icon(isFavorite ?  Icons.star:Icons.star_border),
+                  icon: Icon(isFavorite ? Icons.star : Icons.star_border),
                 ),
+                Center(child: Column(children: [Text(qoute), Text(author)]),),
               ],
             ),
           ),
@@ -62,16 +64,20 @@ class _Qoutes extends State<Qoutes> {
 
   Future<void> loadQoute() async {
     List<String> info = await getQoute();
-    setState(() { 
+    setState(() {
       if (isFavorite) qoutes.add(qoute);
       qoute = info[0];
       author = info[1];
+      isFavorite = false;
     });
   }
 }
 
 Future<List<String>> getQoute() async {
-  final url = Uri.parse('https://zenquotes.io/api/qoutes/');
+  Uri url = Uri.parse('https://zenquotes.io/api/quotes/');
+  if (kIsWeb) {
+    url = Uri.parse('https://corsproxy.io/?https://zenquotes.io/api/quotes/');
+  }
   try {
     final response = await http.get(url);
     final data = jsonDecode(response.body);
